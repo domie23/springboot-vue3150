@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.BingliDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.huanzhe_id as huanzheId
+        ,a.bingli_uuid_number as bingliUuidNumber
+        ,a.zhuyuan_time as zhuyuanTime
+        ,a.yichuan_text as yichuanText
+        ,a.zhusu_text as zhusuText
+        ,a.zhenduan_text as zhenduanText
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.BingliView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,huanzhe.huanzhe_name as huanzheName
+        ,huanzhe.huanzhe_phone as huanzhePhone
+        ,huanzhe.huanzhe_id_number as huanzheIdNumber
+        ,huanzhe.huanzhe_photo as huanzhePhoto
+        ,huanzhe.age as age
+        ,huanzhe.huanzhe_email as huanzheEmail
+        ,huanzhe.hunyin_types as hunyinTypes
+        ,huanzhe.xian_address as xianAddress
+        ,huanzhe.huji_address as hujiAddress
+
+        FROM bingli  a
+        left JOIN huanzhe huanzhe ON a.huanzhe_id = huanzhe.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.huanzheId != null and params.huanzheId != ''">
+                and (
+                    a.huanzhe_id = #{params.huanzheId}
+                )
+            </if>
+            <if test=" params.bingliUuidNumber != '' and params.bingliUuidNumber != null and params.bingliUuidNumber != 'null' ">
+                and a.bingli_uuid_number like CONCAT('%',#{params.bingliUuidNumber},'%')
+            </if>
+            <if test=" params.zhuyuanTimeStart != '' and params.zhuyuanTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.zhuyuan_time) >= UNIX_TIMESTAMP(#{params.zhuyuanTimeStart}) ]]>
+            </if>
+            <if test=" params.zhuyuanTimeEnd != '' and params.zhuyuanTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.zhuyuan_time) <= UNIX_TIMESTAMP(#{params.zhuyuanTimeEnd}) ]]>
+            </if>
+            <if test=" params.yichuanText != '' and params.yichuanText != null and params.yichuanText != 'null' ">
+                and a.yichuan_text like CONCAT('%',#{params.yichuanText},'%')
+            </if>
+            <if test=" params.zhusuText != '' and params.zhusuText != null and params.zhusuText != 'null' ">
+                and a.zhusu_text like CONCAT('%',#{params.zhusuText},'%')
+            </if>
+            <if test=" params.zhenduanText != '' and params.zhenduanText != null and params.zhenduanText != 'null' ">
+                and a.zhenduan_text like CONCAT('%',#{params.zhenduanText},'%')
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断患者的id不为空 -->
+            <if test=" params.huanzheIdNotNull != '' and params.huanzheIdNotNull != null and params.huanzheIdNotNull != 'null' ">
+                and a.huanzhe_id IS NOT NULL
+            </if>
+            <if test=" params.huanzheName != '' and params.huanzheName != null and params.huanzheName != 'null' ">
+                and huanzhe.huanzhe_name like CONCAT('%',#{params.huanzheName},'%')
+            </if>
+            <if test=" params.huanzhePhone != '' and params.huanzhePhone != null and params.huanzhePhone != 'null' ">
+                and huanzhe.huanzhe_phone like CONCAT('%',#{params.huanzhePhone},'%')
+            </if>
+            <if test=" params.huanzheIdNumber != '' and params.huanzheIdNumber != null and params.huanzheIdNumber != 'null' ">
+                and huanzhe.huanzhe_id_number like CONCAT('%',#{params.huanzheIdNumber},'%')
+            </if>
+            <if test="params.ageStart != null  and params.ageStart != '' ">
+                <![CDATA[  and huanzhe.age >= #{params.ageStart}   ]]>
+            </if>
+            <if test="params.ageEnd != null  and params.ageEnd != '' ">
+                <![CDATA[  and huanzhe.age <= #{params.ageEnd}   ]]>
+            </if>
+            <if test="params.age != null  and params.age != '' ">
+                and huanzhe.age = #{params.age}
+            </if>
+            <if test=" params.huanzheEmail != '' and params.huanzheEmail != null and params.huanzheEmail != 'null' ">
+                and huanzhe.huanzhe_email like CONCAT('%',#{params.huanzheEmail},'%')
+            </if>
+            <if test="params.hunyinTypes != null  and params.hunyinTypes != ''">
+                and huanzhe.hunyin_types = #{params.hunyinTypes}
+            </if>
+
+            <if test=" params.xianAddress != '' and params.xianAddress != null and params.xianAddress != 'null' ">
+                and huanzhe.xian_address like CONCAT('%',#{params.xianAddress},'%')
+            </if>
+            <if test=" params.hujiAddress != '' and params.hujiAddress != null and params.hujiAddress != 'null' ">
+                and huanzhe.huji_address like CONCAT('%',#{params.hujiAddress},'%')
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
